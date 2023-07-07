@@ -1,0 +1,1699 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © FFriZz
+
+//@version=5
+
+//#region ———————————————————— readme.md
+// You can access readme.md at https://github.com/salbert11/pine_repo/blob/main/libraries/FrizBug_Docs.md
+
+
+// # **FrizBug Docs**
+
+// ## method: str(`input`)
+// ```
+// method str(any input) => string
+// ```  
+// Converts all types to respective `string` form    
+// **Parameters**   
+// - `input` - (any) required    
+// >  
+// **`Returns`**  
+// string of the input
+// ***
+
+// ## method: init(`console`)
+// ```
+// method init(string console='table') => array<string>
+// ```  
+// Initiation of console array  
+// **Parameters**  
+// - `console` - (string) indicating the type of console to output data to. Valid options are `'table'`, `'label'`, `'box'`, and `'tool'`. The default value is `'table'`.  
+// >  
+// **`Returns`**  
+// Console stirng[]
+// ***
+
+// ## method: update(`console1`, `console2`, `console3`)
+// ```
+// update(array<string> console1=na,array<string> console2=na,array<string> console3=na 
+// |    color bg_color=#0000007d,color text_color=#00ff00,color border_color=#00ff00) => Void
+// ```   
+// The update function updates the given consoles with the latest input in their respective buffers.  
+// It also checks for the type of console and updates the label, table, box, or tooltip accordingly.  
+// If a console is not provided or is empty, it is skipped.  
+// **Parameters**  
+// - `console1` - (string) An array of strings representing the console to be updated.  
+// - `console2` - (string) An array of strings representing the console to be updated.  
+// - `console3` - (string) An array of strings representing the console to be updated.  
+// - `bg_color` - (color) Color of the bg of the console  
+// - `text_color` - (color) Color of the text of the console 
+// - `border_color` - (color) Color of the border of the console 
+// > 
+// **`Returns`**  
+// (void)
+// ***
+
+// ## method: log(`console`, `inp`, `data_label`, `off`, `loop`, `tick`, `m_rows`, `a_index`, `m_rows`, `m_cols`)
+// ```
+// method log(array<string> console,any inp,string data_label="",bool off=false,
+// |    int loop=na,bool tick=false) => inp param (unchanged)
+// ```  
+// Log and keep records of log events  
+// **Parameters**  
+// - `console` - (array<string>) The console to output the message to.  
+// - `inp` - (all) The input value to be printed.  
+// - `data_label` - (string) An optional label to be printed before the input value.  
+// - `off` - (bool) An optional flag to turn off printing. Default is `false`.  
+// - `loop` - (int) for the index inside a loop will display the index on the console.  
+// - `tick` - (bool) An optional flag to turn off printing. Default is `false`.  
+// - `a_index` - (int) An optional parameter for printing an array with a specified number of indexs. 
+// - `m_rows` - (int) An optional parameter for printing a matrix with a specified number of rows.  
+// - `m_cols` - (int) An optional parameter for printing a matrix with a specified number of columns.  
+// > 
+// **`Returns`**  
+// the `inp` param of the function    
+// ***
+
+// ## method: print(`input`, `data_label`, `tick`, `pos`, `off`, `loop`, `a_index`, `m_rows`, `m_cols`, `size`, `text_size`, `bg_color`, `text_color`)
+// ```
+// method print(any input, string data_label='',bool tick=false, string pos=na,  
+// |   bool off=false, int loop=na, int size=20, string text_size=size.small, 
+// |   color bg_color=#0000007d, color text_color=#00ff00) => input param (unchanged)
+// ```   
+// Print single variable per bar data. To print more than 1 data the data must be called together.
+
+// There is no need to init and database or to update at the end of script.
+
+// the only drawback is that you can only view 1 variable at a time for each position unless an array or a matrix is used.
+
+// **Parameters**   
+// - `input` - (all) The input to be printed in the console    
+// - `data_label` - (string) A label to be printed before each input in the console. Default value is an empty string.  
+// - `tick` - (bool) A flag indicating whether to print the input immediately [`true`] or store it in a buffer to be printed. Default value is false.  
+// - `pos` - (string) The position of the console on the chart. Valid values are `"1"`, `"2"`, `"3"`, `"4"`, `"5"`, `"6"`, `"7"`, `"8"`, a corresponding to the positions in a 3x3 grid. If set to `na`, the console will be placed in the bottom. Default value is `na`.  
+// - `off` - (bool) A flag indicating whether to disable printing [`true`] or enable it [`false`]. Default value is `false`.  
+// - `a_index` - (int) An optional parameter for printing an array with a specified number of indices. 
+// - `m_rows` - (int) An optional parameter for printing a matrix with a specified number of rows.  
+// - `m_cols` - (int) An optional parameter for printing a matrix with a specified number of columns.  
+// - `size` - (int) The maximum number of lines that can be displayed in the console. Default value is `20`.  
+// - `loop` - (int) for the index inside a loop will display the index on the console.  
+// - `text_size` - (string) The size of the text in the console. Default value is `size.small`.  
+// - `bg_color` - (color) The background color of the console. Default value is `#0000007d`.  
+// - `text_color` - (color) The color of the text in the console. Default value is `#00ff00`.  
+// >  
+// **`Returns`**  
+// the `input` param of the function
+// ***
+// ## Credits:
+// @kaigouthro - for the font library  
+// @RicardoSantos - for the Debugging Concept that I used to make this
+// ***
+// Everything should be pretty simple.  
+// Just use
+// ```
+// bug.print([tick or console], val, (label if you want))
+// bug.console([tick or console], val, (label if you want))
+// ```
+
+//#endregion ————————————————————
+
+// @description Fork from FFriZz. Debug Tools | The Pinescript Debugging Tool Kit
+library("FrizBug",overlay = true)
+import FFriZz/BoxLine_Lib/10 as BL
+import FFriZz/FrizLabz_Time_Utility_Methods/4 as TUM
+
+
+//=================================================================================================================//
+// function: str(input)	
+// 		- input  		<type> all - converted to string 
+// return: string 
+//=================================================================================================================//
+
+//=================================================================================================================//
+// function: init(UTC,console,type)
+// 			- console	 <type> string  - indicating the type of console to output data to. Valid options are 'table', 'label', 'box', and 'tool'. 
+// 											            The default value is 'table'.
+// return: array<string> out - string array for logging debug data.
+//=================================================================================================================//
+
+//=================================================================================================================//
+// function: update(console1,console2,console3)
+// 			- console1      <type> array<string> - An array of strings representing the console to be updated.
+// 			- console2      <type> array<string> - An array of strings representing the console to be updated.
+// 			- console3      <type> array<string> - An array of strings representing the console to be updated.
+// 			- bg_color		<type> color    - An optional paramater for the bg_color. Default is #000000
+//          - text_color    <type> color    - An optional paramter for the text_color. Default is #00ff00
+//          - border_color  <type> color    - An optional paramter for the border_color. Default is #00ff00
+// returns: (void)
+//=================================================================================================================//
+
+//=================================================================================================================//
+// function log(console,inp,data_label,off,m_rows,a_index_m_cols)
+// 			- console 			<type> array<string>  - The console to output the message to.
+// 			- inp 				<type> all 		   - The input value to be printed.
+// 			- data_label 		<type> string    - An optional label to be printed before the input value.
+//          - loop              <type> int       - Paramater for use within a loop input the index for paramater
+// 			- off 				<type> bool 	   - An optional flag to turn off printing. Default is false.
+// 			- a_index			<type> int 		   - An optional parameter for printing a array with a specified number of indexs.
+// 			- m_rows 			<type> int 		   - An optional parameter for printing a matrix with a specified number of rows.
+//          - m_cols 	        <type> int 		   - An optional parameter for printing a matrix with a specified number of columns.
+// returns: <all> inp - as when input infto functions (can be used as wrapper function)
+//=================================================================================================================//
+
+//=================================================================================================================//
+// function print(input,data_label,tick,pos,off,size,text_size,bg_color,text_color,border_color,UTC)
+// 			- input		   <type> all
+// 			- data_label   <type> string - A label to be printed before each input in the console. Default value is an empty string.
+// 			- tick		   <type> bool 	 - A flag indicating whether to print the input immediately [true] or store 
+// 													          it in a buffer to be printed later [false]. Default value is false.
+// 			- pos		  <type> string  - The position of the console on the chart. Valid values 
+// 													          are "1", "2", "3", "4", "5", "6", "7", "8", and "9", 
+//          - loop        <type> int     - Paramater for use within a loop input the index for paramater
+// 			- off		  <type> bool 	 - A flag indicating whether to disable printing [true] or enable it [false]. 
+// 													          Default value is false.
+// 			- size		  <type> int 	 - The maximum number of lines that can be displayed in the console. Default value is 20.
+// 			- text_size	  <type> string  - The size of the text in the console. Default value is size.small.
+// 			- bg_color	  <type> color 	 - The background color of the console. Default value is #00000075.
+// 			- fg_color	  <type> color 	 - The color of the text in the console. Default value is #00ff00.
+// returns: <all> inp - as when input infto functions (can be used as wrapper function)
+//=================================================================================================================//
+
+// @function print_check
+//-
+// **Usage**
+// ```
+// array<string> inputArray = array.new("1","2","3",.......)
+// array<string> result = print_check(inputArray)
+// console.log(result) // Output: ["1","2","3",.......]
+// ```
+// **Info**
+// - Check the length of the input array of strings. If its length is greater than 4000 characters, shorten the array by removing elements from the beginning of the array until the length is less than or equal to 4000 characters.\
+// 
+// @param a_bug - (array<string>) Array of strings to be checked for length.
+// @returns a_bug - (array<string>) Array of strings that has been shortened if its length is greater than 4000 characters.
+//***
+print_check(a_bug) => 
+	if not na(a_bug)
+		a_size = array.size(a_bug)
+		str_len = str.length(array.join(a_bug))
+		while str_len > 4000 and a_size
+			if str_len < 4000
+				break
+			else
+				array.shift(a_bug)
+				str_len := str.length(array.join(a_bug))
+	a_bug
+
+
+// @function **`init()` - Console init Function**  
+//**Usage**  
+//``` 
+//console = init()// init(console) => console = "table"
+//console.log(close,"close price")
+//console.log(time,"bar open time") 
+//console.update()// Output: will print close price and bar open time to console on chart
+//```
+//***
+//**Params**
+// - **console** - (`string`) `Optional` | default = `"table"`, `"label"`, `"box"`, and `"tool"`.
+//***
+//**Info**
+// - Initializes a debug console for logging debug data based on the specified console type and UTC offset.
+//
+// @param console - (string) Optional. Indicates the type of console to output data to. Valid options are 'table', 'label', 'box', and 'tool'.
+// @returns
+//- **out** - `(array<string>)` Console for logging debug data.
+export method init(string console = 'table') =>
+
+	array<string> out = na
+	varip aip =array.new<string>()
+	var a = array.new<string>()
+	
+	str = ''
+	
+	if str.contains(console,'ool')
+		out := aip
+		str := '\nlog.console '
+		array.unshift(out,str+'[Tooltip] ----------- ')
+	if str.contains(console,'able')
+		out := aip
+		str := '\nlog.console '
+		array.unshift(out,str+'[Table] -------------------------------------------------------- ')
+	if str.contains(console,'abel')
+		out := aip
+		str := '\nlog.console '
+		array.unshift(out,str+'[Label] --------------------------------------------------------')
+	if str.contains(console,'ox')
+		out := aip
+		str := '\nlog.console '
+		array.unshift(out,str+'[Box] -------------------------------------------------------- ')	
+	out
+
+	
+
+// @function **`str(`function)** | **method`.str()`** - Converts all types to respective `string` form  
+// \
+// **Usage**   
+// ```
+//| num = 1212
+//| num2 = 1212
+//| out = if str(num2) == num.str()
+//|     true
+//| else
+//|     false
+//| 
+//| // returns out = true
+// ```
+// **Params** 
+// - **input** - (`any type`) `required` | The input matrix of lines to be converted to a string
+// ***
+// **Info** 
+// - Will turn **box**, **line**, **label**, **linefill** `(type/array/matrix)` into string representations of their location parameters, 
+// including text for `labels`
+// - Will turn **all other types** `(type/array/matrix)` to the respective string version. 
+// ***
+// @param input - ('any type') required
+// @returns `string` of the input
+export method str(float  input) => str.tostring(input)
+export method str(int    input) => str.tostring(input)
+export method str(bool   input) => str.tostring(input)
+export method str(string input) => str.tostring(input)
+// export method str(any    input) => string = any.new(), input
+
+
+export method str(linefill input) =>
+	_1 = linefill.get_line1(input)
+	_2 = linefill.get_line2(input)
+	[X,Y,XX,YY] = BL.LineXY(_1)
+	[x,y,xx,yy] = BL.LineXY(_2)
+	str = str.format('line1 -\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}',
+	 X,Y,XX,YY)
+	str += str.format('\nline2 -\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}',
+	 x,y,xx,yy)
+	str
+
+
+export method str(line  input) => 
+	[x,y,xx,yy] = BL.LineXY(input)
+	str = str.format('x1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}',
+	 x,y,xx,yy)
+	str
+
+
+export method str(box input) => 
+	[L,T,R,B] = BL.BoxXY(input)
+	str = str.format('left = {0}\ntop = {1}\nright = {2}\nbottom = {3}',
+	 L,T,R,B)
+	str
+
+
+export method str(label input) => 
+	[x,y,t] = BL.LabelXY(input)
+	str = str.format('x = {0}\ny = {1}\ntext = {2}',
+	 x,y,t)
+	str
+
+ 
+
+export method str(array<float>  input) => str.tostring(input)
+export method str(array<int>    input) => str.tostring(input)
+export method str(array<bool>   input) => str.tostring(input)
+export method str(array<string> input) => str.tostring(input)
+
+export method str(linefill[] input) =>
+	a_str = array.new<string>()
+	m_str = matrix.new<string>()
+	a_size = array.size(input)
+	
+	for i = 0 to a_size > 0 ? a_size-1 : na
+
+		lf = array.get(input,i)
+		_1 = linefill.get_line1(lf)
+		_2 = linefill.get_line2(lf)
+		
+		[X,Y,XX,YY] = BL.LineXY(_1)
+		[x,y,xx,yy] = BL.LineXY(_2)
+		
+		array.push(a_str,str.format('line1 -\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}',
+		 X,Y,XX,YY) + 
+		 str.format('\nline2 -\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}\n    <i{4}>',
+		 x,y,xx,yy,i))
+	
+	matrix.add_col(m_str,0,a_str) 
+	str.tostring(m_str)
+
+
+export method str(array<line> input) => 
+	a_str = array.new<string>() 
+	m_str = matrix.new<string>()
+	a_size = array.size(input)
+	
+	for i = 0 to a_size > 0 ? a_size-1 : na 
+		
+		line = array.get(input,i)
+		[x,y,xx,yy] = BL.LineXY(line)
+
+		array.push(a_str,str.format('x1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}\n    <i{4}>',
+		 x,y,xx,yy,i))
+	
+	matrix.add_col(m_str,0,a_str)
+	str.tostring(m_str)
+
+
+export method str(array<box> input) => 
+	a_str = array.new<string>()
+	m_str = matrix.new<string>()
+	a_size = array.size(input)
+	
+	for i = 0 to a_size > 0 ? a_size-1 : na
+		
+		box = array.get(input,i)
+		[L,T,R,B] = BL.BoxXY(box)
+
+		array.push(a_str,str.format('left = {0}\ntop = {1}\nright = {2}\nbottom = {3}\n    <i{4}>',
+		 L,T,R,B,i)) 
+	
+	matrix.add_col(m_str,0,a_str)	
+	str.tostring(m_str)
+
+
+export method str(array<label> input) => 
+	a_str = array.new<string>()
+	m_str = matrix.new<string>()
+	a_size = array.size(input)
+	
+	for i = 0 to a_size > 0 ? a_size-1 : na
+		
+		label = array.get(input,i)
+		[x,y,t] = BL.LabelXY(label)
+
+	    array.push(a_str,str.format('x = {0}\ny = {1}\ntext = {2}\n    <i{4}>',
+		 x,y,t,i))
+	
+	matrix.add_col(m_str,0,a_str)	
+	str.tostring(m_str)
+
+
+
+export method str(matrix<float>  input) => str.tostring(input,'0.00')
+export method str(matrix<int> 	  input) => str.tostring(input,'00')
+export method str(matrix<bool>   input) => str.tostring(input)
+export method str(matrix<string> input) => str.tostring(input)
+
+
+export method str(matrix<linefill> input) =>
+	str = ''
+	m_str = matrix.new<string>()
+	m_rows = matrix.rows(input)
+	m_cols = matrix.columns(input)
+	
+	for r = 0 to m_rows > 0 ? m_rows-1 : na
+		a_str = array.new<string>()
+		
+		for c = 0 to m_cols > 0 ? m_cols-1 : na
+			lf = matrix.get(input,r,c)
+			_1 = linefill.get_line1(lf)
+			_2 = linefill.get_line2(lf)
+			
+			[X,Y,XX,YY] = BL.LineXY(_1)
+			[x,y,xx,yy] = BL.LineXY(_2)
+			str += str.format('line 1 -\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}',
+			 X,Y,XX,YY) + 
+			 str.format('\nline 2-\nx1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}\n      <r{4}|c{5}>',
+			 x,y,xx,yy,r,c)
+			array.set(a_str,c,str)
+		
+		matrix.add_row(m_str,r,a_str)
+	str.tostring(m_str)
+
+
+export method str(matrix<line> input) => 
+	str = ''
+	m_str = matrix.new<string>()
+	m_rows = matrix.rows(input)
+	m_cols = matrix.columns(input)
+	
+	for r = 0 to m_rows > 0 ? m_rows-1 : na
+		a_str = array.new<string>()
+		
+		for c = 0 to m_cols > 0 ? m_cols-1 : na
+			line = matrix.get(input,r,c)
+			[x,y,xx,yy] = BL.LineXY(line)
+			str += str.format('x1 = {0}\ny1 = {1}\nx2 = {2}\ny2 = {3}\n    <r{4}|c{5}>',
+			 x,y,xx,yy,r,c)
+			array.set(a_str,c,str)
+			str := ''
+
+		matrix.add_row(m_str,r,a_str)	
+	str.tostring(m_str)
+
+
+export method str(matrix<box> input) => 
+	str = ''
+	m_str = matrix.new<string>()
+	m_rows = matrix.rows(input)
+	m_cols = matrix.columns(input)
+	
+	for r = 0 to m_rows > 0 ? m_rows-1 : na
+		a_str = array.new<string>()
+		
+		for c = 0 to m_cols > 0 ? m_cols-1 : na
+			box = matrix.get(input,r,c)
+			[L,T,R,B] = BL.BoxXY(box)
+			str += str.format('left = {0}\ntop = {1}\nright = {2}\nbottom = {3}\n    <r{4}|c{5}>',
+			 L,T,R,B,r,c)
+			array.set(a_str,c,str)
+			str := ''
+
+		matrix.add_row(m_str,r,a_str)
+	str.tostring(m_str)
+
+
+export method str(matrix<label> input) => 
+	str = ''
+	m_str  = matrix.new<string>()
+	m_rows = matrix.rows(input)
+	m_cols = matrix.columns(input)
+	
+	for r = 0 to m_rows > 0 ? m_rows-1 : na
+		a_str = array.new<string>()
+		
+		for c = 0 to m_cols > 0 ? m_cols-1 : na
+			label = matrix.get(input,r,c)
+			[x,y,t] = BL.LabelXY(label)
+			str += str.format('x = {0}\ny = {1}\ntext = {2}\n    <r{4}|c{5}>',
+			 x,y,t,r,c)
+			array.set(a_str,c,str)
+			str := ''
+	
+		matrix.add_col(m_str,r,a_str)	
+	str.tostring(m_str)
+
+
+str_check(str) => 
+	if not na(str)
+		str_len = str.length(str)
+		a = str.split(str,' ')
+		a_size = array.size(a)
+		while str_len > 4000 and a_size
+			if str_len < 4000
+				break
+			else
+				array.shift(a)
+				str_len := str.length(array.join(a))
+		array.join(a,' ')
+
+
+LTB(console,C,bg_color=#0000007d,text_color=#00ff00,border_color=#00ff00) =>
+
+	var box Box = na, 
+	var label Label = na, 
+	var table Table = na
+	
+
+	if C == 'Label' 
+		if na(Label)
+			Label := TUM.Label(
+						 x = time, 
+						 y = high, 
+						 txt = array.join(console),
+		 				 color = bg_color, textcolor = text_color, 
+		 				 style = label.style_label_down, textalign = text.align_left, size = 'normal'
+						 )
+		else
+			label.set_text(Label,array.join(console))
+			label.set_x(Label,time)
+
+	if C == 'Box' 
+		if na(Box)
+			Box := TUM.Box( 
+						 left = TUM.bars_back_to_time(-50),
+						 top = high * 100,
+						 right= TUM.bars_back_to_time(-350),
+						 bottom = high,
+						 border_width = 1, border_style = line.style_solid,
+			             bgcolor = bg_color, text_color = text_color, border_color = border_color,
+						 txt = array.join(console), text_halign = text.align_left, text_valign = text.align_bottom, text_size = 'auto' 
+					     )
+		else
+			box.set_text(Box,array.join(console))
+			box.set_right(Box,TUM.bars_back_to_time(-50))
+			box.set_left(Box,TUM.bars_back_to_time(-350))
+
+	if C == 'Table' or C == 'Tooltip'
+		Table := table.new(
+			             position = C == 'Tooltip' ? position.top_right : position.bottom_right, 
+						 columns = 1, rows = 1, frame_width = 1,border_width = 1,
+		 				 bgcolor = bg_color, frame_color = border_color, border_color = border_color	 
+						 )
+		
+		if C == 'Tooltip'
+			array.reverse(console)
+		table.cell(
+			             Table,
+					     column = 0, row = 0, width = 0,height = 0,
+					     text = C == "Table" ? array.join(console) : 'Debug',
+			             text_color = text_color, bgcolor = bg_color,
+		 			     text_halign = text.align_left, text_valign = text.align_bottom, text_size = 'small',
+					     tooltip = C == 'Tooltip' ? array.join(console) : na
+				  		 )
+		if C == 'Tooltip'
+			array.reverse(console) 
+
+			
+			
+// @function **update(console1, console2, console3, bg_color, text_color, border_color)**
+//\
+//**Usage**   
+// ```
+//| update(console1, console2)
+//| // or 
+//| console1.update()
+//| console2.update()
+// ```
+// **Info* 
+// The update() function updates the given consoles with the latest input in their respective buffers. It also checks for 
+// the type of console and updates the label, table, box, or tooltip accordingly. If a console is not provided or is empty, 
+// it is skipped.
+//
+// **Params** 
+// - **console1** (array<string>) optional - An array of strings representing the console to be updated.
+// - **console2** (array<string>) optional - An array of strings representing the console to be updated.
+// - **console3** (array<string>) optional - An array of strings representing the console to be updated.
+// - **bg_color** (color) optional - Color of the background of the consoles.
+// - **text_color** (color) optional - Color of the text of the consoles.
+// - **border_color** (color) optional - Color of the border of the consoles.
+//
+// @param console1  array<string> - An array of strings representing the console to be updated.
+// @param console2  array<string> - An array of strings representing the console to be updated.
+// @param console3  array<string> - An array of strings representing the console to be updated.
+// @param bg_color     color  - Color of the bg of the consoles
+// @param text_color   color  - Color of the text of the consoles
+// @param border_color color  - Color of the border of the consoles
+// **Returns** 
+// (void) - This function does not return anything. It updates the given consoles with the latest input in their respective buffers.
+export method update(array<string> console1 = na,array<string> console2 = na, array<string> console3 = na, 
+			 color bg_color = #0000007d, color text_color = #00ff00, color border_color = #00ff00) =>
+	
+	if barstate.islast
+		C1 = ''
+		C2 = ''
+		C3 = ''
+
+		a_size1 = not na(console1) ? array.size(console1) : na
+		a_size2 = not na(console2) ? array.size(console2) : na
+		a_size3 = not na(console3) ? array.size(console3) : na
+
+		a_g1 = not na(a_size1) ? array.get(console1,array.size(console1)-1) : na
+		a_g2 = not na(a_size2) ? array.get(console2,array.size(console2)-1) : na
+		a_g3 = not na(a_size3) ? array.get(console3,array.size(console3)-1) : na
+
+		if not na(console1) and a_size1
+			if str.contains(a_g1,'Label')
+				C1 := 'Label' 
+			if str.contains(a_g1,'Table')
+				C1 := 'Table' 
+			if str.contains(a_g1,'Box')
+				C1 := 'Box' 
+			if str.contains(a_g1,'Tooltip')
+				C1 := 'Tooltip' 
+			print_check(console1)
+
+		if not na(console2)  and a_size2
+			if str.contains(a_g2,'Label')
+				C2 := 'Label' 
+			if str.contains(a_g2,'Table')
+				C2 := 'Table' 
+			if str.contains(a_g2,'Box')
+				C2 := 'Box' 
+			if str.contains(a_g2,'Tooltip')
+				C2 := 'Tooltip' 
+			print_check(console2)
+
+		if not na(console3)  and a_size3
+			if str.contains(a_g3,'Label')
+				C3 := 'Label' 
+			if str.contains(a_g3,'Table')
+				C3 := 'Table' 
+			if str.contains(a_g3,'Box')
+				C3 := 'Box' 
+			if str.contains(a_g3,'Tooltip')
+				C3 := 'Tooltip' 
+			print_check(console3)
+
+		LTB(console1,C1,bg_color,text_color,border_color)
+		LTB(console2,C2,bg_color,text_color,border_color)
+		LTB(console3,C3,bg_color,text_color,border_color)
+
+
+
+export method shorten(string str, int a_index=0, int m_rows=0, int m_cols=0) => 
+	out = ''
+	if str.startswith(str,'[') and str.endswith(str,']')
+		if (m_rows or m_cols)
+			m = str
+			m := str.replace_all(m,'[','')
+			m := str.replace_all(m,'\n','')
+			m := str.replace_all(m,'[]','')
+			s_s = str.split(m,']')
+			a_g = array.size(s_s) > 0 ? array.get(s_s,0) : na
+			s_ss = str.split(a_g,', ')
+			m_out = ''
+
+			// matrix shorten logic
+			if array.size(s_s) > 0 and array.size(s_ss) > 0
+				if array.size(s_s) >= m_rows*2 or array.size(s_ss) >= m_cols*2
+					pop_shift = str.tonumber(str.tostring(m_rows,'0.'))
+					m_strbot = array.new<string>()
+					// array shorten pop then unshift
+					c_ = array.copy(s_s)
+					for i = 0 to pop_shift
+						a_pop = ''
+						if array.size(c_) > 0
+							a_pop := array.pop(c_)
+						s_s_s =  str.split(a_pop,', ')
+						a_size = array.size(s_s_s) 
+						// if m_cols/a_rows are < setting skip array shorten put first to not waste the time on iteration
+						if a_size <= m_cols*2
+							array.unshift(m_strbot,('[') + array.pop(s_s)+']')
+						else
+							a_pop_shift = str.tonumber(str.tostring(m_cols,'0.'))
+							// array shorten pop to unshift 
+							a_strbot = array.new<string>()
+							for ii = 1 to a_pop_shift
+								array.unshift(a_strbot,array.pop(s_s_s))
+							array.unshift(a_strbot,'|')
+							// array shorten unshift to push for top
+							a_strtop = array.new<string>()
+							for ii = 1 to a_pop_shift
+								array.push(a_strtop,array.shift(s_s_s))
+							array.unshift(m_strbot,'['+array.join(array.concat(a_strtop,a_strbot),', ')+']')
+					len = str.length(array.get(m_strbot,0))
+					_len = len*0.6
+					_len := int(_len/2)
+					sep = ''
+					for s = 0 to int(len)
+						if s < int(_len) or int(s*0.7) > len-int(_len*2)
+							sep += ' '
+						else
+							sep += '—'
+					array.unshift(m_strbot,sep)
+					m_strtop = array.new<string>()
+					// array shorten shift to push
+					for i = 1 to pop_shift
+						a_shift = ''
+						if array.size(c_) > 0
+							a_shift := array.shift(c_)
+						s_s_s =  str.split(a_shift,', ')
+						a_size = array.size(s_s_s)
+						// if m_cols/a_rows are < setting skip array shorten put first to not waste the time on iteration 
+						if a_size <= m_cols*2
+							array.push(m_strtop,'['+array.shift(s_s)+']')
+						else
+							a_pop_shift = str.tonumber(str.tostring(m_cols,'0.'))
+							// array shorten pop to unshift
+							a_strbot = array.new<string>()
+							for ii = 1 to a_pop_shift
+								array.unshift(a_strbot,array.pop(s_s_s))
+							array.unshift(a_strbot,'|')
+							// array shorten pop to unshift
+							a_strtop = array.new<string>()
+							for ii = 1 to a_pop_shift
+								array.push(a_strtop,array.shift(s_s_s))
+							array.push(m_strtop,'['+array.join(array.concat(a_strtop,a_strbot),', ')+']')
+					// array.push(m_strtop,'\n')
+					out := str.replace_all(str.replace_all(array.join(array.concat(m_strtop,m_strbot),'\n'),'[]',''),', |,', '  | ')
+			else 
+				out := str
+
+		if a_index 
+			a = str
+			a := str.replace_all(a,'[','')
+			a := str.replace_all(a,']','')
+			s_s = str.split(a,', ')
+			a_size = array.size(s_s) 
+			if a_size > a_index*2 and a_size > 0
+				pop_shift = str.tonumber(str.tostring(a_index,'0.'))
+				a_strbot = array.new<string>()
+				for i = 0 to pop_shift
+					array.unshift(a_strbot,array.pop(s_s))
+				array.unshift(a_strbot,'|')
+				a_strtop = array.new<string>()
+				for i = 0 to pop_shift
+					array.push(a_strtop,array.shift(s_s))
+				out := array.join(array.concat(a_strtop,a_strbot),', ')
+				out := '['+str.replace_all(out,', |,', '  | ')+']'
+			else
+				out := str
+
+	'\n' + out
+
+
+
+// @function  ● This function is a utility function for logging information to a console-like output. 
+// 			  ● It takes in a string array console, a string inp, a string data_label, a string type, 
+// 			  		a string a_or_m, an integer m_rows, and an integer a_index_m_cols.
+// 			  ● The function first checks if the console array exists and if the current bar is the last bar. 
+// 			  ● If either of these conditions is not met, the function ends. 
+// 			  ● If both conditions are met, the function checks if the console array has more than 100 elements. 
+// 			  ● If it does, it removes the first element in the array using the array.shift() function.
+// 			  ● Next, the function checks if the console array has any elements. 
+// 			  ● If it does, it creates a string a_join by concatenating all the elements in the console array with a space character. 
+// 			  ● The function then checks if the a_join string contains the string "_Console" using the str.contains() function. If it does, 
+// 			  		it gets the last element in the console array, a_g, and splits it on the { and } characters. It then gets the second 
+// 			  		element of this split and assigns it to the utc variable. If a_join does not contain "_Console", utc is set to an empty string.
+// 			  ● Next, the function converts the inp variable to a string and assigns the result to the str variable. 
+// 			  ● If the a_or_m variable is not an empty string, the function calls the shorten() function on str, 
+// 			  		passing in a_or_m, m_rows, and a_index_m_cols as arguments. 
+// 			  ● The function then appends a string to str, which includes the type and data_label variables.
+// 			  ● The function then sets the tick and bar variables to false, 
+// 			  		gets the last element in the console array, ap, and checks if ap contains the string "_Console" or "_Bar". 
+// 			  ● If it contains "_Console", tick is set to true. If it contains "_Bar", bar is set to true. 
+// 			  ● The function then pushes ap back onto the console array.If tick is true, 
+// 			  		the function creates a string time_str that includes the current time and bar index. 
+// 			  ● It then checks if time_str is already in the console array. If it is not, it removes the last element from the console array, 
+// 			  		pushes time_str onto the array, and then pushes the removed element back onto the array. 
+// 			  ● The function then checks if str is already in the console array. If it is not, 
+// 			  		it removes the last element from the console array, pushes str onto the array, and then pushes the removed element back onto the array.
+// 			  ● If bar is true, the function creates a string time_str that includes the current time and bar index. 
+// 			  ● It then checks if time_str is in the array. If not it adds it to the array by poping the array, adding time_str, adding popped item.
+// 			  ● It doesnt check first it pops item from the array and add str and adds popped item to the array.
+// @param console 		 string - The console array to update.
+// @param inp 			 string - The input data to add to the console.
+// @param data_label 	 string - A label for the input data.
+// @param tick 			 bool   - An optional flag to turn off printing. Default is false.
+// @param _type 	     string - The type of input data.
+// @returns void
+_console(array<string> console = na, string inp, string data_label = '', int buffer = 0, bool tick = false, string _type = '') =>
+
+	_Console = 'log.console' 
+	_data_label = data_label
+	str_sep_start = '　'
+	str_sep_end = '　'
+
+	// check for console array and last bar 
+	if not na(console) and (last_bar_index - bar_index) >= buffer
+		a_size = array.size(console)
+		if a_size > 40
+			array.shift(console)
+		
+		a_size := array.size(console)
+		if a_size
+			a_join = array.join(console,' ')
+
+			
+			str_i  = str(inp)
+			str = str_i
+			str := '\n'+_type+_data_label+'\n '+str
+
+			time_str = 	
+				  str_sep_start
+				  + '\n> Time | ' + str.format_time(time, "yyyy-MM-dd HH:mm", syminfo.timezone)
+				  + ' | Bar_index - ' 
+				  + str.tostring(bar_index)
+				  + ' —————————————————————————————————————————\n'
+				  + str_sep_end
+			
+			s_c_time = str.contains(a_join,' Bar_index - ' + str.tostring(bar_index))
+			
+			if not s_c_time
+				apopbar = array.pop(console)
+				array.push(console,time_str)
+				array.push(console,apopbar)
+
+			if a_size
+				apoptick = array.pop(console)
+				a_pop_hold = ''
+				push = false
+				
+				for i = console.size()-1 to 0
+					if console.size() > 0
+						g = console.get(i)
+						
+						if str.contains(g,'\n> Time |')
+							if push == false
+								push := true
+							break
+						if str.contains(g,_type+_data_label)
+							push := false
+							
+							if tick
+								s_g = str.split(g,'\n')
+								s_g1 = str.split(array.get(s_g,1),' »')
+								s_s_sg0 = if s_g1.size() > 0
+									s_s_sg0 = array.get(s_g1,0)
+								if str.contains(s_s_sg0,str_i)
+									break
+								else
+									if array.size(s_g1) > 10
+										array.pop(s_g1)
+									array.unshift(s_g1,str_i)
+									join = array.join(s_g1, ' »')
+									to_set = str.format('\n{0}{1}\n {2}\n',_type,_data_label,join)
+									console.set(i,to_set)
+									break
+								
+							if not tick	
+								console.set(i,str+'\n')
+								break
+						else 
+							push := true	
+				if push	
+					console.push(str+'\n')
+				console.push(apoptick)
+					
+
+
+p_helper(inp, int a_index=0, int m_rows=0, int m_cols=0) =>
+	string str = str(inp)
+	if a_index or m_rows or m_cols
+		str := shorten(str,a_index=a_index, m_rows=m_rows, m_cols=m_cols)
+	if str.length(str) > 4000
+		str := str_check(str)
+	[inp,str]
+
+// @function log
+// @param console 		 (array<string>)	- The console to output the message to.
+// @param inp 			 (all) 	    		- The input value to be printed.
+// @param data_label 	 (string)   		- An optional label to be printed before the input value.
+// @param off 			 (bool) 			- An optional flag to turn off printing. Default is false.
+// @param tick 			 (bool) 			- An optional flag to turn off printing. Default is false.
+// @param loop 			 (int)      		- for the index inside a loop will display the index on the console.
+// @param m_rows 		 (int) 	   			- An optional parameter for printing a matrix with a specified number of rows.
+// @param m_cols         (int) 	    		- An optional parameter for printing a matrix with a specified number of columns.
+// @param a_index        (int) 	    		- An optional parameter for printing an array with a specified number of indexs.
+// @returns out 		 (all) 	    		- The input value.
+export method log(array<string> console, string inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type string) ', tick=tick) 
+	out
+   	  
+export method log(array<string> console, 
+ 	 string  inp1=na, string  inp2=na, string  inp3=na, string  inp4=na,
+	 string  inp5=na, string  inp6=na, string  inp7=na, string  inp8=na,
+	 string  inp9=na, string inp10=na, string inp11=na, string inp12=na,
+	 string inp13=na, string inp14=na, string inp15=na, string inp16=na, 
+	 string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+
+	build = ""
+	switch
+		not na(inp1)  => build +=  "\n1 = {0}"
+		not na(inp2)  => build +=  "\n2 = {1}"
+		not na(inp3)  => build +=  "\n3 = {2}"
+		not na(inp4)  => build +=  "\n4 = {3}"
+		not na(inp5)  => build +=  "\n5 = {4}"
+		not na(inp6)  => build +=  "\n6 = {5}"
+		not na(inp7)  => build +=  "\n7 = {6}"
+		not na(inp8)  => build +=  "\n8 = {7}"
+		not na(inp9)  => build +=  "\n9 = {8}"
+		not na(inp10) => build += "\n10 = {9}"
+		not na(inp11) => build += "\n11 = {10}"
+		not na(inp12) => build += "\n12 = {11}"
+		not na(inp13) => build += "\n13 = {12}"
+		not na(inp14) => build += "\n14 = {13}"
+		not na(inp15) => build += "\n15 = {14}"
+		not na(inp16) => build += "\n16 = {15}" 
+
+	str = str.format(build,inp1,inp2,inp3,inp4,inp5,inp6,inp7,inp8,inp9,inp10,inp11,inp12,inp13,inp14,inp15,inp16)
+	console.log(str, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)   
+
+export method log(array<string> console, int inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console = console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type int) ',tick=tick) 
+	out
+
+export method log(array<string> console, float inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type float) ', tick=tick) 
+	out
+	  
+export method log(array<string> console, bool inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type bool) ', tick=tick) 
+	out
+
+export method log(array<string> console, line inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type line) ', tick=tick) 
+	out
+
+export method log(array<string> console, box inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type box) ', tick=tick) 
+	out
+
+export method log(array<string> console, label inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type label) ', tick=tick) 
+	out
+
+export method log(array<string> console, linefill inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	[out, _str] = p_helper(inp=inp)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str,data_label=data_label,buffer=buffer, _type=_loop+'(type linefill) ', tick=tick) 
+	out
+
+
+
+export method log(array<string> console, array<string> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) =>  
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [string]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<int> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [int]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<float> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [float]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<bool> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [bool]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<line> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [line]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<box> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [box]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<label> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [label]) ', tick=tick) 
+	out
+
+export method log(array<string> console, array<linefill> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+   int a_index = 0) => 
+	
+	[out,_str] = p_helper(inp=inp,a_index=a_index)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type [linefill]) ', tick=tick) 
+	out
+
+
+
+export method log(array<string> console, matrix<string> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <string>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<int> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <int>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<float> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console,inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <float>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<bool> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <bool>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<line> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <line>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<box> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <box>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<label> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <label>) ', tick=tick) 
+	out
+
+export method log(array<string> console, matrix<linefill> inp, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+  int m_rows = 0, int m_cols = 0) => 
+	[out,_str] = p_helper(inp=inp,m_rows=m_rows,m_cols=m_cols)
+	if not off 
+		_loop = (not na(loop) ? '↻'+str(loop): '')
+		_console(console=console, inp=_str, data_label=data_label,buffer=buffer, _type=_loop+'(type <linefill>) ', tick=tick) 
+	out
+
+
+
+
+export method log(string inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(int inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(float inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(bool inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(line inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(box inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(label inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+export method log(linefill inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false) =>
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick)
+
+
+export method log(array<int> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<float> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<bool> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<line> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<box> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<label> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(array<linefill> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int a_index = 0) => 
+   	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, a_index = a_index)
+
+export method log(matrix<string> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) =>
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<int> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) =>
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<float> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<bool> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<line> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<box> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<label> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+  	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+export method log(matrix<linefill> inp, array<string> console, string data_label = "", bool off = false, int buffer = 0, int loop = na, bool tick = false,
+     int m_rows = 0, int m_cols = 0) => 
+	console.log(inp, data_label = data_label,off = off, buffer = buffer, loop = loop, tick = tick, m_rows=m_rows, m_cols=m_cols)
+
+
+
+//#region print main() ————————————————————
+
+// @function console
+// @param input 	   all    - The input string to be printed in the console.
+// @param data_label   string - A label to be printed before each input in the console. Default value is an empty string.
+// @param tick 		   bool   - A flag indicating whether to print the input immediately (true) or store it in a buffer to be printed later (false).
+//   						    Default value is false.
+// @param position     string - The position of the console on the chart. 
+//  						    Valid values are "1", "2", "3", "4", "5", "6", "7", "8", and "9", corresponding to the positions in a 3x3 grid. 
+//  						    If set to `na`, the console will be placed in the bottom left corner. Default value is na.
+// @param size 		   int 	  - The maximum number of lines that can be displayed in the console. Default value is 20.
+// @param text_size    string - The size of the text in the console. Default value is size.small.
+// @param text_color   color  - The color of the text in the console. Default value is #00ff00.
+// @param bg_color     color  - The background color of the console. Default value is #00000075.
+// @returns 		   table  - The table object representing the console.
+// @description  -  This function is used to print a string in a console on the chart. 
+// 					The console is a table object with a single column and two rows. 
+// 					The first row displays the current timestamp, and the second row displays the input string. 
+// 					The console can be positioned at any of the nine locations in a 3x3 grid on the chart, 
+// 					or in the bottom left corner if the position parameter is set to na. The maximum number of lines that can be displayed 
+// 					in the console can be set using the size parameter, and the size of the text in the console can be set using the text_size parameter. 
+// 					The background color, text color, and border color of the console can be set using the bg_color, text_color, 
+// 					and border_color parameters, respectively. The time zone offset to use when displaying timestamps in the console can be set using the UTC parameter. 
+// 					Additionally, a label can be printed before each input string using the data_label parameter. 
+// 					The function returns the table object representing the console.
+console(string input, string data_label = '', int buffer = 0, bool tick = false, string position = na, int size = 20, 
+		 string text_size = size.small, string _type = 'string',
+		 color text_color = #00ff00, color bg_color = #0000007d) =>
+	
+	var table table = na
+	_data_label = data_label
+
+	TIME = str.format_time(tick ? timenow : time, "yyyy-MM-dd HH:mm", syminfo.timezone) + ' | Bar_index~' + str.tostring(bar_index)
+	
+	t_loc = position.bottom_left
+	if not na(position)
+		pos = array.size(table.all)
+		if pos > 9 
+			pos -= 9
+		if _data_label == ''
+			_data_label := str.tostring(pos)
+		if str.length(position) == 1
+			pos := int(str.tonumber(position))
+		t_loc := switch pos
+			1 => position.bottom_left
+			2 => position.bottom_center
+			3 => position.bottom_right
+			4 => position.middle_left
+			5 => position.middle_center
+			6 => position.middle_right
+			7 => position.top_left
+			8 => position.top_center
+			9 => position.top_right
+		
+	table := table.new(
+					 position = t_loc, columns = 1, rows = 2, 
+					 bgcolor = bg_color, frame_color = text_color, frame_width=1, 
+					 border_color = text_color, border_width = 1
+				     )
+	
+	if (last_bar_index - bar_index) >= buffer
+		var a_ = array.new<string>()
+
+		string = TIME+'\n'+_type+" "+_data_label+'\n'+input+'\n'
+
+		if not tick
+			var array<string> a_console = array.new<string>()
+			array.push(a_console,string)
+			if array.size(a_console) > size
+				array.shift(a_console)
+				print_check(a_console)
+			a_ := a_console 
+
+		if tick
+			varip array<string> a_consoleip = array.new<string>()
+			array.push(a_consoleip,string)
+			if array.size(a_consoleip) > size
+				array.shift(a_consoleip)
+				print_check(a_consoleip)
+			a_ := a_consoleip
+
+		table.cell( 
+					 table_id = table, column = 0, row = 1, width = 30, 
+					 text = not na(a_) ? array.join(a_, '\n') : na, 
+					 text_color = text_color, bgcolor = bg_color,
+					 text_halign = text.align_left, text_valign = text.align_bottom, text_size = text_size	 
+				  )   
+
+		time_str = 'Time~'+ str.format_time(time, "yyyy-MM-dd HH:mm", syminfo.timezone) +' | Bar_index~' +
+		 						 str.tostring(bar_index)+ '| str.len~' + str(str.length(array.join(a_)))
+
+		table.cell( 
+					 table_id = table, column = 0, row = 0, width = 30, 
+					 text = time_str, 
+					 text_color = text_color,bgcolor = bg_color,
+					 text_halign = text.align_center, text_valign = text.align_bottom, text_size = text_size	
+				  )  	
+//#endregion ————————————————————
+
+
+//#region print overloads() ————————————————————
+
+// @function print
+// @param input 	   (all)	 - The input to be printed in the console
+// @param data_label   (string)  - A label to be printed before each input in the console. Default value is an empty string.
+// @param tick 		   (bool) 	 - A flag indicating whether to print the input immediately [true] or store it in a buffer to be printed later [false]. 
+// 								     Default value is false.
+// @param pos 		   (string)  - The position of the console on the chart. Valid values are "1", "2", "3", "4", "5", "6", "7", "8", and "9", 
+// 								     corresponding to the positions in a 3x3 grid. If set to na, the console will be placed in the bottom left corner.
+// 								     Default value is na.
+// @param off 		   (bool)    - A flag indicating whether to disable printing [true] or enable it [false]. Default value is false.
+// @param loop 		   (int)     - for the index inside a loop will display the index on the console.
+// @param a_index      (int)     - An optional parameter for printing an array with a specified number of indexs.
+// @param m_rows 	   (int)     - An optional parameter for printing a matrix with a specified number of rows.
+// @param m_cols       (int)     - An optional parameter for printing a matrix with a specified number of columns.
+// @param size 		   (int)     - The maximum number of lines that can be displayed in the console. Default value is 20.
+// @param text_size    (string)  - The size of the text in the console. Default value is size.small.
+// @param bg_color     (color)   - The background color of the console. Default value is #0000007d.
+// @param text_color   (color)   - The color of the text in the console. Default value is #00ff00.
+// @returns out 	   (all)     - The input value.
+// @description  -  The print function is used to display a message in a console on a chart. 
+// 					The input value to be printed, inp, can be of any data type [e.g. string, int, float, array, matrix]. 
+// 					The data_label parameter is an optional string that can be used to label the input value. 
+// 					The tick parameter is a boolean flag that determines whether the input value should be printed immediately [true] or 
+// 					stored in a buffer to be printed later [false]. The off parameter is a boolean flag that can be used to 
+// 					disable printing [true] or enable it [false]. The size parameter sets the maximum number of lines that can be displayed in the console. 
+// 					The text_size parameter sets the size of the text in the console. The bg_color parameter sets the background color of the console. 
+// 					The text_color parameter sets the color of the text in the console. The border_color parameter sets the color of the border around the console. 
+// 					The position parameter sets the position of the console on the chart. The UTC parameter sets the time zone offset to use when 
+// 					displaying timestamps in the console. The function returns the input value inp.
+export method print(string input, string data_label='',bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type str)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)  
+	out
+
+export method print(int input, string data_label ='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na, 
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type int)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(float input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na, 
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type float)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(bool input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na, 
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type bool)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(line input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type line)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(box input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type box)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(label input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type label)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(linefill input, string data_label='',bool tick = false, string pos = na,  
+								 int buffer = 0, bool off = false, int loop = na,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out, _str] = p_helper(inp=input)
+	if not off
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		_type= '(type linefill)\n'
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+
+
+export method print(array<string> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [string])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<int> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [int])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<float> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [float])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<bool> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [bool])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<line> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [line])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<box> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [box])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(array<label> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [label])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(linefill[] input, string data_label = '',bool tick = false, string pos = na, 
+								 int buffer = 0, bool  off = false, int loop = na, int a_index = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,a_index=a_index)
+	if not off
+		_type= '(type [linefill])'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+
+
+
+export method print(matrix<string> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	a_or_m = 'matrix'
+	if not off
+		_type= '(type <string>)'
+		_loop= (not na(loop) ? '↻'+str(loop) +'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<int> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <int>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<float> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <float>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<bool> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <bool>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<line> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <line>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<box> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <box>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<label> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <label>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)   
+	out
+
+export method print(matrix<linefill> input, string data_label = '', bool tick = false, string pos = na, 
+								 int buffer = 0, bool off = false, int loop = na, int m_rows = 0, int m_cols = 0,
+								 int size = 20, string text_size = size.small, 
+								 color bg_color = #0000007d, color text_color = #00ff00) =>
+	[out,_str] = p_helper(inp=input,m_rows=m_rows,m_cols=m_cols)
+	if not off
+		_type= '(type <linefill>)'
+		_loop= (not na(loop) ? '↻'+str(loop)+'\n': '')
+		console(input= _str,tick=tick, size=size, text_size=text_size, buffer=buffer,  
+		 position=pos, data_label=data_label, _type=_loop+_type, 
+		 bg_color=bg_color, text_color=text_color)    
+	out
+
+//#endregion ————————————————————
+
+
+//#region Usage/Examples ————————————————————
+//  __  __                                            __   ________                                      ___                    
+// /\ \/\ \                                          / // \ \  ____\                                    /\_ \                   
+// \ \ \ \ \    ____     __       __      __        / //   \ \  ____   __  _    __      ___ ___   _____\//\ \      __    ____  
+//  \ \ \ \ \  /',__\  /'__`\   /'_ `\  /'__`\     / //     \ \  ____\ /\ \/'\ /'__`\  /' __` __`\/\ '__`\\ \ \   /'__`\ /',__\ 
+//   \ \ \_\ \/\__, `\/\ \L\.\_/\ \L\ \/\  __/    / //       \ \ \____ \/>  <//\ \L\.\_/\ \/\ \/\ \ \ \L\ \\_\ \_/\  __//\__, `\
+//    \ \_____\/\____/\ \__/.\_\ \____ \ \____\  / //         \ \______//\_/\_\ \__/.\_\ \_\ \_\ \_\ \ ,__//\____\ \____\/\____/
+//     \/_____/\/___/  \/__/\/_/\/___L\ \/____/ /_//           \/_____/ \//\/_/\/__/\/_/\/_/\/_/\/_/\ \ \/ \/____/\/____/\/___/ 
+//                                /\____/                                                           \ \_\                      
+//                                \_/__/                                                             \/_/                      
+
+
+// // instructions 
+// // import FFriZz/FrizBug/<version> as bug
+
+// for the print function there is no need to init and database or to update at the end of script 
+// the only draw back is that you can only view 1 var at a time unless an array is used
+
+// Examples
+a_string = array.from('1','2','3','4','5','6','7','8','9','10')
+
+mf = matrix.new<int>()
+matrix.add_row(mf,0,array.from(1,2,3,4,5,6,7,8,9,0))
+matrix.add_row(mf,0,array.from(11,12,13,14,15,16,17,18,19,20))
+matrix.add_row(mf,0,array.from(21,22,23,24,25,26,27,28,29,30))
+matrix.add_row(mf,0,array.from(31,32,33,34,35,36,37,38,39,40))
+matrix.add_row(mf,0,array.from(41,42,43,44,45,46,47,48,49,50))
+matrix.add_row(mf,0,array.from(51,52,53,54,55,56,57,58,59,60))
+matrix.add_row(mf,0,array.from(61,62,63,64,65,66,67,68,69,70))
+matrix.add_row(mf,0,array.from(71,72,73,74,75,76,77,78,79,80))
+matrix.add_row(mf,0,array.from(81,82,83,84,85,86,87,88,89,90))
+matrix.add_row(mf,0,array.from(91,92,93,94,95,96,97,98,99,100))
+if barstate.islast
+    
+    print(mf,'Matrix',pos = '1',m_rows=2,m_cols=2)
+    //print(mf,'Matrix',pos = '1')
+    print(a_string,'Array',pos = '2', a_index=2)
+    debugtable = init() 
+    log(debugtable, 'letter I','I = i{tick = true non changing value} ',tick=true)
+
+    log(debugtable, close,'Close {with tick = true}',tick = true)
+    log(debugtable, close,'Close {with tick = false}')
+
+    // Put at end of code
+    update(debugtable)
+
+//#endregion ————————————————————
